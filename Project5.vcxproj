@@ -80,6 +80,7 @@
     <Link>
       <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>glut32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>10000000</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -118,14 +119,16 @@
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Fill.cpp" />
+    <ClCompile Include="Life.cpp" />
     <ClCompile Include="Quad.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Square.cpp" />
-    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Color.h" />
     <ClInclude Include="Fill.h" />
+    <ClInclude Include="Life.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="Square.h" />

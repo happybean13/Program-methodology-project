@@ -7,6 +7,7 @@ using namespace std;
 /* Implement: Include header file(s) */
 #include "Player.h"
 #include "Fill.h"
+#include "life.h"
 /* Implement: Control FPS if you need */
 
 clock_t start = clock();
@@ -29,11 +30,32 @@ int boundary_intersection_spkey = 0;
 int clockwise = 0;
 int counter_clockwise = 0;
 
+//
+int right_before_added_boundary[2];
+
+
 Player pl(WIDTH /2 ,(HEIGHT-100)/2, 1, 1, 0, 6);
 int present_Node, past_Node = 0;
 int boundary_add_switch = 0;
 Fill temp(WIDTH / 2, (HEIGHT - 100) / 2);
+Square sq0(100, 205, 1, 1, 1, 10);
+Square sq1(100, 165, 1, 1, 1, 10);
+Square sq2(100, 125, 1, 1, 1, 10);
+Square sq3(100, 85, 1, 1, 1, 10);
+Square z1(rand() % 300, rand() % 300, 1, 0, 0, 6);
+Square z2(rand() % 300, rand() % 300, 0, 1, 0, 6);
+Square z3(rand() % 300, rand() % 300, 0, 0, 1, 6);
+Square z4(rand() % 300, rand() % 300, 0.5, 0.5, 0.5, 6);
+int z_dir[4] = { 0 };
+int z_die[4] = { 1,1,1,1 };
+Life lf1(20, 370, 1, 0, 0, 16);
+Life lf2(40, 370, 1, 0, 0, 16);
+Life lf3(60, 370, 1, 0, 0, 16);
+int mode = 0;
+int sw = 0;
 
+//
+int life = 3;
 
 void init() {
 	
@@ -63,7 +85,7 @@ void init() {
 	present_Node = 0;
 	past_Node = 0;
 	boundary_add_switch = 0;
-
+	life = 3;
 }
 
 inline void drawNode(int x, int y, int r, int g, int b) {
@@ -81,12 +103,44 @@ inline void drawNode(int x, int y, int r, int g, int b) {
 void restart() {
 
 	
+	pl.setPos(WIDTH / 2, (HEIGHT - 100) / 2);
+	sp_key = 0;
+	present_Node = 0;
+	past_Node = 0;
+	boundary_add_switch = 0;
+	for (int i = 0; i < WIDTH; i++) {
+		for (int j = 0; j < (HEIGHT - 100); j++) {
+			if(Node[i][j] ==3)
+				Node[i][j] = 0;
+		}
+	}
+	life--;
+}
+//
+void meet_boundary() {
+	if (Node[z1.getX()][z1.getY()] == 3 || Node[z2.getX()][z2.getY()] == 3 || Node[z3.getX()][z3.getY()] == 3 || Node[z4.getX()][z4.getY()] == 3) {
+		restart();
+	}
+	if (right_before_added_boundary[0] == pl.getX() && right_before_added_boundary[1] == pl.getY()) {
+		cout << "?" << endl;
+	}
+	else if (Node[pl.getX()][ pl.getY()] == 3) {
+		restart();
+	}
 
-	init();
 
 }
 
-
+void check_die() {
+	if (Node[z1.getX()][z1.getY()] == 1)
+		z_die[0] = 0;
+	if (Node[z2.getX()][z2.getY()] == 1)
+		z_die[1] = 0;
+	if (Node[z3.getX()][z3.getY()] == 1)
+		z_die[2] = 0;
+	if (Node[z4.getX()][z4.getY()] == 1)
+		z_die[3] = 0;
+}
 void delete_boundary(int x, int y, int d) {
 	if (x == boundary_intersection_x[1] && y == boundary_intersection_y[1]) {
 		cout << "================DELETE_BOUNDARY_OVER=====================" << endl;
@@ -148,7 +202,7 @@ void delete_boundary2(int x, int y, int d) {
 	}
 	else {
 		Node[x][y] = 4;
-		cout << "DELETE_BOUNDARY" << "  x : " << x << "y : " << y << "direction" << d << endl;
+		//cout << "DELETE_BOUNDARY" << "  x : " << x << "y : " << y << "direction" << d << endl;
 		if (d == 1) {
 			if (Node[x - 1][y] == 2) {
 				delete_boundary2(x - 1, y, 3);
@@ -303,76 +357,121 @@ void add_boundary() {
 		}
 		if (boundary_add_switch == 1) {
 			Node[pl.getX()][pl.getY()] = 3;
+			right_before_added_boundary[0] = pl.getX();
+			right_before_added_boundary[1] = pl.getY();
 
 		}
-		cout << "past, present, onoff  : "<< past_Node << " ," << present_Node << " , " << boundary_add_switch	<< endl;
+		//cout << "past, present, onoff  : "<< past_Node << " ," << present_Node << " , " << boundary_add_switch	<< endl;
 
 		past_Node = present_Node;
 	}
 void processNormalKeys(unsigned char key, int x, int y) {
 	if (key == 'r')
 		init();
+	if (key == 13) {
+		mode += 4;
+		sw = 1;
+	}
 }
 void processSpecialKeys(int key, int x, int y) {
 	/* Implement: Set key input */
 
 	switch (key) {
 	case GLUT_KEY_UP:
-		if (sp_key != 2) {
-			if (boundary_add_switch == 1) {
-				if (sp_key == 3)
-					clockwise++;
-				if (sp_key == 4)
-					counter_clockwise++;
+		if (sw == 1) {
+			if (sp_key != 2) {
+				if (boundary_add_switch == 1) {
+					if (sp_key == 3)
+						clockwise++;
+					if (sp_key == 4)
+						counter_clockwise++;
+				}
+				sp_key = 1;
 			}
-			sp_key = 1;
+		}
+		else if (sw == 0) {
+			if (mode > 0)
+				mode--;
 		}
 		break;
 	case GLUT_KEY_DOWN:
-		if (sp_key != 1) {
-			if (boundary_add_switch == 1) {
-				if (sp_key == 4)
-					clockwise++;
-				if (sp_key == 3)
-					counter_clockwise++;
+		if (sw == 1) {
+			if (sp_key != 1) {
+				if (boundary_add_switch == 1) {
+					if (sp_key == 4)
+						clockwise++;
+					if (sp_key == 3)
+						counter_clockwise++;
+				}
+				sp_key = 2;
 			}
-			sp_key = 2;
+		}
+		else if (sw == 0) {
+			if (mode < 3)
+				mode++;
 		}
 		break;
 	case GLUT_KEY_LEFT:
-		if (sp_key != 4) {
-			if (boundary_add_switch == 1) {
-				if (sp_key == 2)
-					clockwise++;
-				if (sp_key == 1)
-					counter_clockwise++;
+		if (sw == 1) {
+			if (sp_key != 4) {
+				if (boundary_add_switch == 1) {
+					if (sp_key == 2)
+						clockwise++;
+					if (sp_key == 1)
+						counter_clockwise++;
+				}
+				sp_key = 3;
 			}
-			sp_key = 3;
 		}
 		break;
 	case GLUT_KEY_RIGHT:
-		if (sp_key != 3) {
-			if (boundary_add_switch == 1) {
-				if (sp_key == 1)
-					clockwise++;
-				if (sp_key == 2)
-					counter_clockwise++;
+		if (sw == 1) {
+			if (sp_key != 3) {
+				if (boundary_add_switch == 1) {
+					if (sp_key == 1)
+						clockwise++;
+					if (sp_key == 2)
+						counter_clockwise++;
+				}
+				sp_key = 4;
 			}
-			sp_key = 4;
 		}
 		break;
 
 	}
 }
 
+void draw_string(void*font, const char* str, float x, float y) {
+	glRasterPos2f(x, y);
+	for (int i = 0; i < strlen(str); i++)
+		glutBitmapCharacter(font, str[i]);
+}
+void draw_line(float x1, float x2, float y1, float y2) {
+	glLineWidth(10.f);
+	glColor3f(1, 1, 1);
+	glBegin(GL_LINE);
+	glVertex2f(x1, y1);
+	glVertex2f(x2, y2);
+	glEnd();
+}
+
 void idle() {
 	/* Implement: Move the square */
 	endtime = clock();
 	if (endtime - start > 1000 / 60) {
-		pl.move(sp_key,int(WIDTH),int(HEIGHT)-100);
-		add_boundary();
-		//cout << "clock" << clockwise << " " << counter_clockwise << endl;
+		if (mode >= 4) {
+			pl.move(sp_key, int(WIDTH), int(HEIGHT) - 100);
+			meet_boundary();
+			add_boundary();
+			check_die();
 
+
+			//cout << "clock" << clockwise << " " << counter_clockwise << endl;
+			z1.move(rand() % 10, z_dir, int(WIDTH), int(HEIGHT) - 100);
+			z2.move(rand() % 10, z_dir +1 ,int(WIDTH), int(HEIGHT) - 100);
+			z3.move(rand() % 10, z_dir +2, int(WIDTH), int(HEIGHT) - 100);
+			z4.move(rand() % 10, z_dir +3, int(WIDTH), int(HEIGHT) - 100);
+		}
 		start = endtime;
 	}
 	glutPostRedisplay();
@@ -385,22 +484,90 @@ void renderScene() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(0, WIDTH, 0, HEIGHT);
-	for (int i = 0; i < WIDTH; i++) {
-		for (int j = 0; j < HEIGHT - 100; j++) {
-			if (Node[i][j] == 1) {
-				drawNode(i, j,1,1,1);
-
-			}
-			else if (Node[i][j] == 2) {
-				drawNode(i, j,1,0,0);
-			}
-			else if (Node[i][j] == 3) {
-				drawNode(i, j, 0, 0, 1);
-			}
-		}		
+	if (mode < 4) {
+		glColor3f(1, 1, 1);
+		draw_string(GLUT_BITMAP_9_BY_15, "Select Level", 110, 250);
+		glColor3f(0, 1, 1);
+		draw_string(GLUT_BITMAP_9_BY_15, "EASY", 110, 200);
+		glColor3f(1, 1, 0);
+		draw_string(GLUT_BITMAP_9_BY_15, "NORMAL", 110, 160);
+		glColor3f(1, 0, 1);
+		draw_string(GLUT_BITMAP_9_BY_15, "HARD", 110, 120);
+		glColor3f(1, 0, 0);
+		draw_string(GLUT_BITMAP_9_BY_15, "HELL", 110, 80);
+		if (mode == 0)
+			sq0.draw();
+		else if (mode == 1)
+			sq1.draw();
+		else if (mode == 2)
+			sq2.draw();
+		else if (mode == 3)
+			sq3.draw();
 	}
-	pl.draw();
-
+	else if (mode >= 4) {
+		int count = 0;
+		glColor3f(1, 1, 1);
+		draw_string(GLUT_BITMAP_HELVETICA_10, "You've killed 0 enemy(enemies)", 85, 300);
+		draw_line(0, 301, 300, 301);
+		if(life >0)
+			lf1.draw();
+		if(life>1)
+			lf2.draw();
+		if(life>2)
+			lf3.draw();
+		for (int i = 0; i < WIDTH; i++) {
+			for (int j = 0; j < HEIGHT - 100; j++) {
+				if (Node[i][j] == 1) {
+					drawNode(i, j, 1, 1, 1);
+					count++;
+				}
+				else if (Node[i][j] == 2) {
+					drawNode(i, j, 1, 0, 0);
+				}
+				else if (Node[i][j] == 3) {
+					drawNode(i, j, 0, 0, 1);
+				}
+			}
+		}
+		pl.draw();
+		float percent = (float)count / 90000 * 100;
+		char q[1000];
+		sprintf_s(q, "%d", (int)percent);
+		glColor3f(1, 1, 1);
+		cout << percent << endl;
+		draw_string(GLUT_BITMAP_9_BY_15, q, 190, 380);
+		
+		switch (mode) {
+		case 4:
+			if(z_die[0] ==1)
+				z1.draw();
+			break;
+		case 5:
+			if (z_die[0] == 1)
+				z1.draw();
+			if (z_die[1] == 1)
+				z2.draw();
+			break;
+		case 6:
+			if (z_die[0] == 1)
+			z1.draw();
+			if (z_die[1] == 1)
+			z2.draw();
+			if (z_die[2] == 1)
+			z3.draw();
+			break;
+		case 7:
+			if (z_die[0] == 1)
+			z1.draw();
+			if (z_die[1] == 1)
+			z2.draw();
+			if (z_die[2] == 1)
+			z3.draw();
+			if (z_die[3] == 1)
+			z4.draw();
+			break;
+		}
+	}
 	glutSwapBuffers();
 }
 
