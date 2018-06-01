@@ -1,0 +1,8 @@
+﻿  Source.cpp
+Source.cpp(652): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  코드를 생성하고 있습니다.
+  2 of 81 functions ( 2.5%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  Project5.vcxproj -> C:\Users\PSW\source\repos\Project5\Release\Project5.exe
