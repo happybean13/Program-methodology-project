@@ -1,7 +1,10 @@
 #include <iostream>
+#include <stdio.h>
 #include <vector>
 #include <time.h>
-
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm")
 using namespace std;
 
 /* Implement: Include header file(s) */
@@ -27,6 +30,7 @@ int Node[WIDTH][HEIGHT - 100] = { 0 };
 int boundary_intersection_x[2];
 int boundary_intersection_y[2];
 int boundary_intersection_spkey = 0;
+int boundary_intersection_spkey2 = 0;
 int clockwise = 0;
 int counter_clockwise = 0;
 int win = 1;
@@ -54,7 +58,8 @@ Life lf2(40, 370, 1, 0, 0, 16);
 Life lf3(60, 370, 1, 0, 0, 16);
 int mode = 0;
 int sw = 0;
-
+int c = 0;
+int z_dead_position[2];
 //
 int life = 3;
 
@@ -93,10 +98,18 @@ void init() {
 
 	z_die[2] = 1;
 	z_die[3] = 1;
-
+	kill = 0;
+	win = 1;
+	z1.setPos(rand() % 300, rand() % 300);
+	z2.setPos(rand() % 300, rand() % 300);
+	z3.setPos(rand() % 300, rand() % 300);
+	z4.setPos(rand() % 300, rand() % 300);
+	c = 0;
+	clockwise = 0;
+	counter_clockwise = 0;
 }
 
-inline void drawNode(int x, int y, int r, int g, int b) {
+inline void drawNode(int x, int y, float r, float g, float b) {
 	glColor3f(r, g, b);
 	glBegin(GL_QUADS);
 	glVertex2f(x, y);
@@ -122,21 +135,23 @@ void restart() {
 				Node[i][j] = 0;
 		}
 	}
+	clockwise = 0;
+	counter_clockwise = 0;
 	life--;
 }
 //
 void meet_boundary() {
 	if (Node[z1.getX()][z1.getY()] == 3 || Node[z2.getX()][z2.getY()] == 3 || Node[z3.getX()][z3.getY()] == 3 || Node[z4.getX()][z4.getY()] == 3) {
 		restart();
-		cout << "=======  Meet Bugs  =======" << endl;
-		cout << "z1 ("  << z1.getX() << " , "<< z1.getY() << ")"<< endl;
+		//cout << "=======  Meet Bugs  =======" << endl;
+		//cout << "z1 ("  << z1.getX() << " , "<< z1.getY() << ")"<< endl;
 	}
 	if (right_before_added_boundary[0] == pl.getX() && right_before_added_boundary[1] == pl.getY()) {
 		//cout << "?" << endl;
 	}
 	else if (Node[pl.getX()][ pl.getY()] == 3) {
 		restart();
-		cout << "=======  Meet Boundary  =======" << endl;
+		//		cout << "=======  Meet Boundary  =======" << endl;
 
 	}
 
@@ -147,26 +162,26 @@ void move_z() {
 	if (z_die[0] == 1) {
 		if (Node[z1.getX() + z1.getSideLength() / 2][z1.getY()] == 2) {
 			z1.move(3, z_dir, int(WIDTH), int(HEIGHT) - 100);
-			cout << "1" << endl;
+			
 		}
 		else if (Node[z1.getX() - z1.getSideLength() / 2][z1.getY()] == 2) {
 			z1.move(4, z_dir, int(WIDTH), int(HEIGHT) - 100);
-			cout << "2" << endl;
+		
 
 		}
 		else if (Node[z1.getX() ][z1.getY() - z1.getSideLength() / 2] == 2) {
 			z1.move(1, z_dir, int(WIDTH), int(HEIGHT) - 100);
-			cout << "3" << endl;
+		
 
 		}
 		else if (Node[z1.getX()][z1.getY() + z1.getSideLength() / 2] == 2) {
 			z1.move(2, z_dir, int(WIDTH), int(HEIGHT) - 100);
-			cout << "4" << endl;
+		
 
 		}
 		else {
 			z1.move(rand() % rand_num, z_dir, int(WIDTH), int(HEIGHT) - 100);
-			cout << "5" << endl;
+		
 		}
 	}
 	if (z_die[1] == 1) {
@@ -233,26 +248,31 @@ void check_die() {
 	if (Node[z1.getX()][z1.getY()] == 1) {
 		z_die[0] = 0;
 		kill++;
+		z_dead_position[0] = z1.getX();
+		z_dead_position[1] = z1.getY();
 	}
 	if (Node[z2.getX()][z2.getY()] == 1) {
 		z_die[1] = 0;
 		kill++;
-
+		z_dead_position[0] = z2.getX();
+		z_dead_position[1] = z2.getY();
 	}
 	if (Node[z3.getX()][z3.getY()] == 1) {
 		z_die[2] = 0;
 		kill++;
-
+		z_dead_position[0] = z3.getX();
+		z_dead_position[1] = z3.getY();
 	}
 	if (Node[z4.getX()][z4.getY()] == 1) {
 		z_die[3] = 0;
 		kill++;
-
+		z_dead_position[0] = z4.getX();
+		z_dead_position[1] = z4.getY();
 	}
 }
 void delete_boundary(int x, int y, int d) {
 	if (x == boundary_intersection_x[1] && y == boundary_intersection_y[1]) {
-		cout << "================DELETE_BOUNDARY_OVER=====================" << endl;
+		//cout << "================DELETE_BOUNDARY_OVER=====================" << endl;
 	}
 	else {
 		Node[x][y] = 4;
@@ -307,7 +327,7 @@ void delete_boundary(int x, int y, int d) {
 }
 void delete_boundary2(int x, int y, int d) {
 	if (x == boundary_intersection_x[1] && y == boundary_intersection_y[1]) {
-		cout << "================DELETE_BOUNDARY_OVER=====================" << endl;
+		//cout << "================DELETE_BOUNDARY_OVER=====================" << endl;
 	}
 	else {
 		Node[x][y] = 4;
@@ -365,7 +385,7 @@ void Flood_fill(int x, int y) {
 
 	}
 	else if (x <0 || y<0 || x> WIDTH - 1 || y> HEIGHT - 100 - 1) {
-		cout << "Flood FIll out of range" << endl;
+		//cout << "Flood FIll out of range" << endl;
 	}
 	else {
 		//cout << "FIlled (x,y,) " << "( " << x << ", " << y << " , " << ")" << endl;
@@ -383,7 +403,7 @@ void Flood_fill2(int x, int y, int * onoff) {
 
 		}
 		else if (x <0 || y<0 || x> WIDTH - 1 || y> HEIGHT - 100 - 1) {
-			cout << "Flood FIll out of range" << endl;
+			//cout << "Flood FIll out of range" << endl;
 			*onoff = 0;
 		}
 		else {
@@ -396,184 +416,470 @@ void Flood_fill2(int x, int y, int * onoff) {
 		}
 	}
 }
+//void add_boundary() {
+//	present_Node = Node[pl.getX()][pl.getY()];
+//	int it_x, it_y, it_spkey;
+//
+//		if ( present_Node ==0 && past_Node == 2) {
+//			boundary_intersection_x[0] = pl.getX();
+//			boundary_intersection_y[0] = pl.getY();
+//			boundary_intersection_spkey = sp_key;
+//			boundary_add_switch = 1;
+//		}
+//		
+//
+//		
+//		else if (present_Node == 2 && past_Node == 0 ) {
+//			
+//			boundary_intersection_x[1] = pl.getX();
+//			boundary_intersection_y[1] = pl.getY();
+//			if (clockwise > counter_clockwise) {
+//				if (boundary_intersection_spkey == 1) {
+//					boundary_intersection_x[0]++;
+//					boundary_intersection_y[0]--;
+//					it_spkey = 4;
+//				}
+//				else if (boundary_intersection_spkey == 2) {
+//					boundary_intersection_x[0]--;
+//					boundary_intersection_y[0]++;
+//					it_spkey = 3;
+//				}
+//				else if (boundary_intersection_spkey == 3) {
+//					boundary_intersection_x[0]++;
+//					boundary_intersection_y[0]++;
+//					it_spkey = 1;
+//				}
+//				else if (boundary_intersection_spkey == 4) {
+//					boundary_intersection_x[0]--;
+//					boundary_intersection_y[0]--;
+//					it_spkey = 2;
+//				}
+//				it_x = boundary_intersection_x[0];
+//				it_y = boundary_intersection_y[0];
+//				//delete_boundary(it_x, it_y, it_spkey);
+//				for (int i = 0; i < WIDTH; i++) {
+//					for (int j = 0; j < (HEIGHT - 100); j++) {
+//						if (Node[i][j] == 3)
+//							Node[i][j] = 2;
+//					}
+//				}
+//				Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+//
+//			}
+//			else if (clockwise < counter_clockwise) {
+//				if (boundary_intersection_spkey == 1) {
+//					boundary_intersection_x[0]--;
+//					boundary_intersection_y[0]--;
+//					it_spkey = 3;
+//				}
+//				else if (boundary_intersection_spkey == 2) {
+//					boundary_intersection_x[0]++;
+//					boundary_intersection_y[0]++;
+//					it_spkey = 4;
+//				}
+//				else if (boundary_intersection_spkey == 3) {
+//					boundary_intersection_x[0]++;
+//					boundary_intersection_y[0]--;
+//					it_spkey = 2;
+//				}
+//				else if (boundary_intersection_spkey == 4) {
+//					boundary_intersection_x[0]--;
+//					boundary_intersection_y[0]++;
+//					it_spkey = 1;
+//				}
+//				it_x = boundary_intersection_x[0];
+//				it_y = boundary_intersection_y[0];
+//				//delete_boundary(it_x, it_y, it_spkey);
+//				for (int i = 0; i < WIDTH; i++) {
+//					for (int j = 0; j < (HEIGHT - 100); j++) {
+//						if (Node[i][j] == 3)
+//							Node[i][j] = 2;
+//					}
+//				}
+//				Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+//			}
+//			else if (clockwise == counter_clockwise) {
+//				int left_on = 1;
+//				int right_on = 1;
+//				cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+//				if (boundary_intersection_spkey == 1) {
+//					Flood_fill2(boundary_intersection_x[0] - 1, boundary_intersection_y[0], &left_on);
+//					Flood_fill2(boundary_intersection_x[0] + 1, boundary_intersection_y[0], &right_on);
+//					if (left_on == 1) {
+//						boundary_intersection_x[0]--;
+//						boundary_intersection_y[0]--;
+//						it_spkey = 3;
+//					}
+//					if (right_on == 1) {
+//						boundary_intersection_x[0]++;
+//						boundary_intersection_y[0]--;
+//						it_spkey = 4;
+//					}
+//				}
+//				else if (boundary_intersection_spkey == 2) {
+//					Flood_fill2(boundary_intersection_x[0] + 1, boundary_intersection_y[0], &left_on);
+//					Flood_fill2(boundary_intersection_x[0] - 1, boundary_intersection_y[0], &right_on);
+//					if (left_on == 1) {
+//						boundary_intersection_x[0]++;
+//						boundary_intersection_y[0]++;
+//						it_spkey = 4;
+//					}
+//					if (right_on == 1) {
+//						boundary_intersection_x[0]--;
+//						boundary_intersection_y[0]++;
+//						it_spkey = 3;
+//					}
+//				}
+//				else if (boundary_intersection_spkey == 3) {
+//					Flood_fill2(boundary_intersection_x[0] , boundary_intersection_y[0]-1, &left_on);
+//					Flood_fill2(boundary_intersection_x[0] , boundary_intersection_y[0]+1, &right_on);
+//					if (left_on == 1) {
+//						boundary_intersection_x[0]++;
+//						boundary_intersection_y[0]--;
+//						it_spkey = 2;
+//					}
+//					if (right_on == 1) {
+//						boundary_intersection_x[0]++;
+//						boundary_intersection_y[0]++;
+//						it_spkey = 1;
+//					}
+//				}
+//				else if (boundary_intersection_spkey == 4) {
+//					Flood_fill2(boundary_intersection_x[0], boundary_intersection_y[0] + 1, &left_on);
+//					Flood_fill2(boundary_intersection_x[0], boundary_intersection_y[0] - 1, &right_on);
+//					if (left_on == 1) {
+//						boundary_intersection_x[0]--;
+//						boundary_intersection_y[0]++;
+//						it_spkey = 1;
+//					}
+//					if (right_on == 1) {
+//						boundary_intersection_x[0]--;
+//						boundary_intersection_y[0]--;
+//						it_spkey = 2;
+//					}
+//				}
+//				for (int i = 0; i < WIDTH; i++) {
+//					for (int j = 0; j < (HEIGHT - 100); j++) {
+//						if (Node[i][j] == 5)
+//							Node[i][j] = 0;
+//					}
+//				}
+//				it_x = boundary_intersection_x[0];
+//				it_y = boundary_intersection_y[0];
+//				//delete_boundary(it_x, it_y, it_spkey);
+//				for (int i = 0; i < WIDTH; i++) {
+//					for (int j = 0; j < (HEIGHT - 100); j++) {
+//						if (Node[i][j] == 3)
+//							Node[i][j] = 2;
+//					}
+//				}
+//				Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+//			}
+//
+//			boundary_add_switch = 0;
+//			clockwise = 0;
+//			counter_clockwise = 0;
+//			boundary_intersection_spkey = 0;
+//		}
+//		if (boundary_add_switch == 1) {
+//			Node[pl.getX()][pl.getY()] = 3;
+//			right_before_added_boundary[0] = pl.getX();
+//			right_before_added_boundary[1] = pl.getY();
+//
+//		}
+//		//cout << "past, present, onoff  : "<< past_Node << " ," << present_Node << " , " << boundary_add_switch	<< endl;
+//
+//		past_Node = present_Node;
+//	}
+
 void add_boundary() {
-	present_Node = Node[pl.getX()][pl.getY()];
-	int it_x, it_y, it_spkey;
-
-		if ( present_Node ==0 && past_Node == 2) {
-			boundary_intersection_x[0] = pl.getX();
-			boundary_intersection_y[0] = pl.getY();
-			boundary_intersection_spkey = sp_key;
-			boundary_add_switch = 1;
-		}
-		
-
-		
-		else if (present_Node == 2 && past_Node == 0 ) {
+		present_Node = Node[pl.getX()][pl.getY()];
+		int it_x, it_y, it_spkey;
+	
+			if ( present_Node ==0 && past_Node == 2) {
+				boundary_intersection_x[0] = pl.getX();
+				boundary_intersection_y[0] = pl.getY();
+				boundary_intersection_spkey = sp_key;
+				boundary_add_switch = 1;
+			}
 			
-			boundary_intersection_x[1] = pl.getX();
-			boundary_intersection_y[1] = pl.getY();
-			if (clockwise > counter_clockwise) {
-				if (boundary_intersection_spkey == 1) {
-					boundary_intersection_x[0]++;
-					boundary_intersection_y[0]--;
-					it_spkey = 4;
-				}
-				else if (boundary_intersection_spkey == 2) {
-					boundary_intersection_x[0]--;
-					boundary_intersection_y[0]++;
-					it_spkey = 3;
-				}
-				else if (boundary_intersection_spkey == 3) {
-					boundary_intersection_x[0]++;
-					boundary_intersection_y[0]++;
-					it_spkey = 1;
-				}
-				else if (boundary_intersection_spkey == 4) {
-					boundary_intersection_x[0]--;
-					boundary_intersection_y[0]--;
-					it_spkey = 2;
-				}
-				it_x = boundary_intersection_x[0];
-				it_y = boundary_intersection_y[0];
-				delete_boundary(it_x, it_y, it_spkey);
-				for (int i = 0; i < WIDTH; i++) {
-					for (int j = 0; j < (HEIGHT - 100); j++) {
-						if (Node[i][j] == 3)
-							Node[i][j] = 2;
-					}
-				}
-				Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+	
+			
+			else if (present_Node == 2 && past_Node == 0 ) {
+				boundary_intersection_spkey2 = sp_key;
+				boundary_intersection_x[1] = pl.getX();
+				boundary_intersection_y[1] = pl.getY();
+				if (clockwise > counter_clockwise) {
+					cout << "Clock" << endl;
+					cout << clockwise << " " << counter_clockwise << endl;
 
-			}
-			else if (clockwise < counter_clockwise) {
-				if (boundary_intersection_spkey == 1) {
-					boundary_intersection_x[0]--;
-					boundary_intersection_y[0]--;
-					it_spkey = 3;
-				}
-				else if (boundary_intersection_spkey == 2) {
-					boundary_intersection_x[0]++;
-					boundary_intersection_y[0]++;
-					it_spkey = 4;
-				}
-				else if (boundary_intersection_spkey == 3) {
-					boundary_intersection_x[0]++;
-					boundary_intersection_y[0]--;
-					it_spkey = 2;
-				}
-				else if (boundary_intersection_spkey == 4) {
-					boundary_intersection_x[0]--;
-					boundary_intersection_y[0]++;
-					it_spkey = 1;
-				}
-				it_x = boundary_intersection_x[0];
-				it_y = boundary_intersection_y[0];
-				delete_boundary(it_x, it_y, it_spkey);
-				for (int i = 0; i < WIDTH; i++) {
-					for (int j = 0; j < (HEIGHT - 100); j++) {
-						if (Node[i][j] == 3)
-							Node[i][j] = 2;
-					}
-				}
-				Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
-			}
-			else if (clockwise == counter_clockwise) {
-				int left_on = 1;
-				int right_on = 1;
-				cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-				if (boundary_intersection_spkey == 1) {
-					Flood_fill2(boundary_intersection_x[0] - 1, boundary_intersection_y[0], &left_on);
-					Flood_fill2(boundary_intersection_x[0] + 1, boundary_intersection_y[0], &right_on);
-					if (left_on == 1) {
-						boundary_intersection_x[0]--;
-						boundary_intersection_y[0]--;
-						it_spkey = 3;
-					}
-					if (right_on == 1) {
+					if (boundary_intersection_spkey == 1) {
 						boundary_intersection_x[0]++;
-						boundary_intersection_y[0]--;
+						boundary_intersection_y[0];
 						it_spkey = 4;
 					}
-				}
-				else if (boundary_intersection_spkey == 2) {
-					Flood_fill2(boundary_intersection_x[0] + 1, boundary_intersection_y[0], &left_on);
-					Flood_fill2(boundary_intersection_x[0] - 1, boundary_intersection_y[0], &right_on);
-					if (left_on == 1) {
-						boundary_intersection_x[0]++;
-						boundary_intersection_y[0]++;
-						it_spkey = 4;
-					}
-					if (right_on == 1) {
+					else if (boundary_intersection_spkey == 2) {
 						boundary_intersection_x[0]--;
-						boundary_intersection_y[0]++;
+						boundary_intersection_y[0];
 						it_spkey = 3;
 					}
-				}
-				else if (boundary_intersection_spkey == 3) {
-					Flood_fill2(boundary_intersection_x[0] , boundary_intersection_y[0]-1, &left_on);
-					Flood_fill2(boundary_intersection_x[0] , boundary_intersection_y[0]+1, &right_on);
-					if (left_on == 1) {
-						boundary_intersection_x[0]++;
-						boundary_intersection_y[0]--;
-						it_spkey = 2;
-					}
-					if (right_on == 1) {
-						boundary_intersection_x[0]++;
+					else if (boundary_intersection_spkey == 3) {
+						boundary_intersection_x[0];
 						boundary_intersection_y[0]++;
 						it_spkey = 1;
 					}
-				}
-				else if (boundary_intersection_spkey == 4) {
-					Flood_fill2(boundary_intersection_x[0], boundary_intersection_y[0] + 1, &left_on);
-					Flood_fill2(boundary_intersection_x[0], boundary_intersection_y[0] - 1, &right_on);
-					if (left_on == 1) {
-						boundary_intersection_x[0]--;
-						boundary_intersection_y[0]++;
-						it_spkey = 1;
-					}
-					if (right_on == 1) {
-						boundary_intersection_x[0]--;
+					else if (boundary_intersection_spkey == 4) {
+						boundary_intersection_x[0];
 						boundary_intersection_y[0]--;
 						it_spkey = 2;
 					}
-				}
-				for (int i = 0; i < WIDTH; i++) {
-					for (int j = 0; j < (HEIGHT - 100); j++) {
-						if (Node[i][j] == 5)
-							Node[i][j] = 0;
+					if (boundary_intersection_spkey2 == 1) {
+						boundary_intersection_x[1]++;
+						boundary_intersection_y[1]--;
 					}
-				}
-				it_x = boundary_intersection_x[0];
-				it_y = boundary_intersection_y[0];
-				delete_boundary(it_x, it_y, it_spkey);
-				for (int i = 0; i < WIDTH; i++) {
-					for (int j = 0; j < (HEIGHT - 100); j++) {
-						if (Node[i][j] == 3)
-							Node[i][j] = 2;
+					else if (boundary_intersection_spkey2 == 2) {
+						boundary_intersection_x[1]--;
+						boundary_intersection_y[1]++;
 					}
+					else if (boundary_intersection_spkey2 == 3) {
+						boundary_intersection_x[1]++;
+						boundary_intersection_y[1]++;
+					}
+					else if (boundary_intersection_spkey2 == 4) {
+						boundary_intersection_x[1]--;
+						boundary_intersection_y[1]--;
+					}
+					it_x = boundary_intersection_x[0];
+					it_y = boundary_intersection_y[0];
+					//delete_boundary(it_x, it_y, it_spkey);
+					for (int i = 0; i < WIDTH; i++) {
+						for (int j = 0; j < (HEIGHT - 100); j++) {
+							if (Node[i][j] == 3)
+								Node[i][j] = 2;
+						}
+					}
+					Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+					Flood_fill(boundary_intersection_x[1], boundary_intersection_y[1]);
+	
 				}
-				Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+				else if (clockwise < counter_clockwise) {
+					cout << "counter Clock" << endl;
+					cout << clockwise << " " << counter_clockwise << endl;
+
+					if (boundary_intersection_spkey == 1) {
+						boundary_intersection_x[0]--;
+						boundary_intersection_y[0];
+						it_spkey = 3;
+					}
+					else if (boundary_intersection_spkey == 2) {
+						boundary_intersection_x[0]++;
+						boundary_intersection_y[0];
+						it_spkey = 4;
+					}
+					else if (boundary_intersection_spkey == 3) {
+						boundary_intersection_x[0];
+						boundary_intersection_y[0]--;
+						it_spkey = 2;
+					}
+					else if (boundary_intersection_spkey == 4) {
+						boundary_intersection_x[0];
+						boundary_intersection_y[0]++;
+						it_spkey = 1;
+					}
+					if (boundary_intersection_spkey2 == 1) {
+						boundary_intersection_x[1]--;
+						boundary_intersection_y[1]--;
+					
+					}
+					else if (boundary_intersection_spkey2 == 2) {
+						boundary_intersection_x[1]++;
+						boundary_intersection_y[1]++;
+						
+					}
+					else if (boundary_intersection_spkey2 == 3) {
+						boundary_intersection_x[1]++;
+						boundary_intersection_y[1]--;
+						
+					}
+					else if (boundary_intersection_spkey2 == 4) {
+						boundary_intersection_x[1]--;
+						boundary_intersection_y[1]++;
+						
+					}
+					it_x = boundary_intersection_x[0];
+					it_y = boundary_intersection_y[0];
+					//delete_boundary(it_x, it_y, it_spkey);
+					for (int i = 0; i < WIDTH; i++) {
+						for (int j = 0; j < (HEIGHT - 100); j++) {
+							if (Node[i][j] == 3)
+								Node[i][j] = 2;
+						}
+					}
+					Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+					Flood_fill(boundary_intersection_x[1], boundary_intersection_y[1]);
+				}
+				else if (clockwise == counter_clockwise) {
+					cout << "Straight" << endl;
+					cout << clockwise << " " << counter_clockwise << endl;
+
+					int left_on = 1;
+					int right_on = 1;
+					int left_on2 = 1;
+					int right_on2 = 1;
+					//cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+					if (boundary_intersection_spkey == 1) {
+						Flood_fill2(boundary_intersection_x[0] - 1, boundary_intersection_y[0], &left_on);
+						Flood_fill2(boundary_intersection_x[0] + 1, boundary_intersection_y[0], &right_on);
+						if (left_on == 1) { 
+							boundary_intersection_x[0]--;
+							boundary_intersection_y[0];
+							it_spkey = 3;
+						}
+						if (right_on == 1) {
+							boundary_intersection_x[0]++;
+							boundary_intersection_y[0];
+							it_spkey = 4;
+						}
+					}
+					else if (boundary_intersection_spkey == 2) {
+						Flood_fill2(boundary_intersection_x[0] + 1, boundary_intersection_y[0], &left_on);
+						Flood_fill2(boundary_intersection_x[0] - 1, boundary_intersection_y[0], &right_on);
+						if (left_on == 1) {
+							boundary_intersection_x[0]++;
+							boundary_intersection_y[0];
+							it_spkey = 4;
+						}
+						if (right_on == 1) {
+							boundary_intersection_x[0]--;
+							boundary_intersection_y[0];
+							it_spkey = 3;
+						}
+					}
+					else if (boundary_intersection_spkey == 3) {
+						Flood_fill2(boundary_intersection_x[0] , boundary_intersection_y[0]-1, &left_on);
+						Flood_fill2(boundary_intersection_x[0] , boundary_intersection_y[0]+1, &right_on);
+						if (left_on == 1) {
+							boundary_intersection_x[0];
+							boundary_intersection_y[0]--;
+							it_spkey = 2;
+						}
+						if (right_on == 1) {
+							boundary_intersection_x[0];
+							boundary_intersection_y[0]++;
+							it_spkey = 1;
+						}
+					}
+					else if (boundary_intersection_spkey == 4) {
+						Flood_fill2(boundary_intersection_x[0], boundary_intersection_y[0] + 1, &left_on);
+						Flood_fill2(boundary_intersection_x[0], boundary_intersection_y[0] - 1, &right_on);
+						if (left_on == 1) {
+							boundary_intersection_x[0];
+							boundary_intersection_y[0]++;
+							it_spkey = 1;
+						}
+						if (right_on == 1) {
+							boundary_intersection_x[0];
+							boundary_intersection_y[0]--;
+							it_spkey = 2;
+						}
+					}
+					if (boundary_intersection_spkey2 == 1) {
+						Flood_fill2(boundary_intersection_x[1] - 1, boundary_intersection_y[1] -1 , &left_on2);
+						Flood_fill2(boundary_intersection_x[1] + 1, boundary_intersection_y[1] -1, &right_on2);
+						if (left_on2 == 1) {
+							boundary_intersection_x[1]--;
+							boundary_intersection_y[1]--;
+							it_spkey = 3;
+						}
+						if (right_on2 == 1) {
+							boundary_intersection_x[1]++;
+							boundary_intersection_y[1]--;
+							it_spkey = 4;
+						}
+					}
+					else if (boundary_intersection_spkey2 == 2) {
+						Flood_fill2(boundary_intersection_x[1] + 1, boundary_intersection_y[1]+1, &left_on2);
+						Flood_fill2(boundary_intersection_x[1] - 1, boundary_intersection_y[1]+1, &right_on2);
+						if (left_on2 == 1) {
+							boundary_intersection_x[1]++;
+							boundary_intersection_y[1]++;
+							it_spkey = 4;
+						}
+						if (right_on2 == 1) {
+							boundary_intersection_x[1]--;
+							boundary_intersection_y[1]++;
+							it_spkey = 3;
+						}
+					}
+					else if (boundary_intersection_spkey2 == 3) {
+						Flood_fill2(boundary_intersection_x[1]+1, boundary_intersection_y[1] - 1, &left_on);
+						Flood_fill2(boundary_intersection_x[1]+1, boundary_intersection_y[1] + 1, &right_on);
+						if (left_on2 == 1) {
+							boundary_intersection_x[1]++;
+							boundary_intersection_y[1]--;
+							it_spkey = 2;
+						}
+						if (right_on2 == 1) {
+							boundary_intersection_x[1]++;
+							boundary_intersection_y[1]++;
+							it_spkey = 1;
+						}
+					}
+					else if (boundary_intersection_spkey2 == 4) {
+						Flood_fill2(boundary_intersection_x[1]-1, boundary_intersection_y[1] + 1, &left_on);
+						Flood_fill2(boundary_intersection_x[1]-1, boundary_intersection_y[1] - 1, &right_on);
+						if (left_on2 == 1) {
+							boundary_intersection_x[1]--;
+							boundary_intersection_y[1]++;
+							it_spkey = 1;
+						}
+						if (right_on2 == 1) {
+							boundary_intersection_x[1]--;
+							boundary_intersection_y[1]--;
+							it_spkey = 2;
+						}
+					}
+					for (int i = 0; i < WIDTH; i++) {
+						for (int j = 0; j < (HEIGHT - 100); j++) {
+							if (Node[i][j] == 5)
+								Node[i][j] = 0;
+						}
+					}
+					it_x = boundary_intersection_x[0];
+					it_y = boundary_intersection_y[0];
+					//delete_boundary(it_x, it_y, it_spkey);
+					for (int i = 0; i < WIDTH; i++) {
+						for (int j = 0; j < (HEIGHT - 100); j++) {
+							if (Node[i][j] == 3)
+								Node[i][j] = 2;
+						}
+					}
+					Flood_fill(boundary_intersection_x[0], boundary_intersection_y[0]);
+					Flood_fill(boundary_intersection_x[1], boundary_intersection_y[1]);
+
+				}
+	
+				boundary_add_switch = 0;
+				boundary_intersection_spkey = 0;
+				clockwise = 0;
+				counter_clockwise = 0;
 			}
-
-			boundary_add_switch = 0;
-			clockwise = 0;
-			counter_clockwise = 0;
-			boundary_intersection_spkey = 0;
+			if (boundary_add_switch == 1) {
+				Node[pl.getX()][pl.getY()] = 3;
+				right_before_added_boundary[0] = pl.getX();
+				right_before_added_boundary[1] = pl.getY();
+	
+			}
+			//cout << "past, present, onoff  : "<< past_Node << " ," << present_Node << " , " << boundary_add_switch	<< endl;
+	
+			past_Node = present_Node;
 		}
-		if (boundary_add_switch == 1) {
-			Node[pl.getX()][pl.getY()] = 3;
-			right_before_added_boundary[0] = pl.getX();
-			right_before_added_boundary[1] = pl.getY();
-
-		}
-		//cout << "past, present, onoff  : "<< past_Node << " ," << present_Node << " , " << boundary_add_switch	<< endl;
-
-		past_Node = present_Node;
-	}
 void processNormalKeys(unsigned char key, int x, int y) {
-	if (key == 'r')
+	if (key == 'r' || key == 'R') {
 		init();
+		mode -= 4;
+		sw = 0;
+	}
 	if (key == 13) {
 		mode += 4;
 		sw = 1;
@@ -652,18 +958,28 @@ void draw_string(void*font, const char* str, float x, float y) {
 	for (int i = 0; i < strlen(str); i++)
 		glutBitmapCharacter(font, str[i]);
 }
-
+void draw_gameset() {
+	glColor3f(1, 1, 1);
+	glBegin(GL_QUADS);
+	glVertex2f(0 , 300);
+	glVertex2f(0, 303);
+	glVertex2f(300, 303);
+	glVertex2f(300, 300);
+	glEnd();
+}
 
 void idle() {
 	/* Implement: Move the square */
 	endtime = clock();
-	if (endtime - start > 1000 / 120) {
+	if (endtime - start > 1000 / 100) {
 		if (mode >= 4) {
-			pl.move(sp_key, int(WIDTH), int(HEIGHT) - 100);
-			meet_boundary();
-			add_boundary();
-			check_die();
-			move_z();
+			if (win == 1) {
+				pl.move(sp_key, int(WIDTH), int(HEIGHT) - 100);
+				meet_boundary();
+				add_boundary();
+				check_die();
+				move_z();
+			}
 
 		}
 		start = endtime;
@@ -710,34 +1026,72 @@ void renderScene() {
 		for (int i = 0; i < WIDTH; i++) {
 			for (int j = 0; j < HEIGHT - 100; j++) {
 				if (Node[i][j] == 1) {
-					drawNode(i, j, 1, 1, 1);
+					drawNode(i, j, 1, 0.2, 1);
 					count++;
 				}
 				else if (Node[i][j] == 2) {
-					drawNode(i, j, 1, 0, 0);
+					drawNode(i, j, 0, 1, 1);
 				}
-				else if (Node[i][j] == 3) {
-					drawNode(i, j, 0, 0, 1);
+				else if (Node[i][j] == 3 ) {
+					if( (i+j)&4 ==0 || (i+j)%4 ==1)
+						drawNode(i, j, 0.8 , 0.8 , 1);
 				}
 			}
 		}
 		pl.draw();
-		char kill2[100];                                                  //요기부터
+		char kill2[100];                                                
 		sprintf_s(kill2, "%d", kill);
 		glColor3f(1, 1, 1);
-		draw_string(GLUT_BITMAP_HELVETICA_10, "You've killed", 85, 300);
-		draw_string(GLUT_BITMAP_HELVETICA_10, kill2, 150, 300);
-		draw_string(GLUT_BITMAP_HELVETICA_10, "enemy(enemies)", 160, 300);
+		draw_string(GLUT_BITMAP_HELVETICA_10, "You've killed", 85, 310);
+		draw_string(GLUT_BITMAP_HELVETICA_10, kill2, 150, 310);
+		draw_string(GLUT_BITMAP_HELVETICA_10, "enemy(enemies)", 160, 310);
 		float percent = (float)count / 90000 * 100;
 		char q[100];
 		sprintf_s(q, "%d", (int)percent);
 		glColor3f(1, 1, 1);
 		//cout << percent << endl;
-		draw_string(GLUT_BITMAP_9_BY_15, q, 190, 365);
-		draw_string(GLUT_BITMAP_9_BY_15, "%", 210, 365);
+		draw_string(GLUT_BITMAP_9_BY_15, "NOW  :" , 190, 365);
+		draw_string(GLUT_BITMAP_9_BY_15, q, 253, 365);
+		draw_string(GLUT_BITMAP_9_BY_15, "%", 280, 365);
+		draw_string(GLUT_BITMAP_9_BY_15, "GOAL : 80 %", 190, 350);
 
-
-		
+		draw_gameset();
+		if (kill == 1) {
+			if (c < 120) {
+				glColor3f(0, 1, 1);
+				draw_string(GLUT_BITMAP_HELVETICA_10, "First Blood", z_dead_position[0], z_dead_position[1]);
+				if (c == 0)
+					sndPlaySoundA("FIRSTBLOOD2.WAV", SND_ASYNC | SND_NODEFAULT);
+				c++;
+			}
+		}
+		if (kill == 2) {
+			if (c < 240) {
+				glColor3f(0, 1, 1);
+				draw_string(GLUT_BITMAP_HELVETICA_10, "Double Kill", z_dead_position[0], z_dead_position[1]);
+				if (c == 120)
+					sndPlaySoundA("DOUBLEKILL2.WAV", SND_ASYNC | SND_NODEFAULT);
+				c++;
+			}
+		}
+		if (kill == 3) {
+			if (c < 360) {
+				glColor3f(0, 1, 1);
+				draw_string(GLUT_BITMAP_HELVETICA_10, "Triple Kill", z_dead_position[0], z_dead_position[1]);
+				if (c == 240)
+					sndPlaySoundA("TRIPLEKILL2.WAV", SND_ASYNC | SND_NODEFAULT);
+				c++;
+			}
+		}
+		if (kill == 4) {
+			if (c < 480) {
+				glColor3f(0, 1, 1);
+				draw_string(GLUT_BITMAP_HELVETICA_10, "Ace", z_dead_position[0], z_dead_position[1]);
+				if (c == 360)
+					sndPlaySoundA("ACE2.WAV", SND_ASYNC | SND_NODEFAULT);
+				c++;
+			}
+		}
 		switch (mode) {
 		case 4:
 			if(z_die[0] ==1)
@@ -745,6 +1099,9 @@ void renderScene() {
 			z_die[1] = 0;
 			z_die[2] = 0;
 			z_die[3] = 0;
+			glColor3f(0, 1, 1);
+			draw_string(GLUT_BITMAP_9_BY_15, "EASY", 100, 365);
+			
 			break;
 		case 5:
 			if (z_die[0] == 1)
@@ -753,6 +1110,10 @@ void renderScene() {
 				z2.draw();
 			z_die[2] = 0;
 			z_die[3] = 0;
+			glColor3f(1, 1, 0);
+			draw_string(GLUT_BITMAP_9_BY_15, "NORMAL", 100, 365);
+			
+		
 			break;
 		case 6:
 			if (z_die[0] == 1)
@@ -762,6 +1123,9 @@ void renderScene() {
 			if (z_die[2] == 1)
 			z3.draw();
 			z_die[3] = 0;
+			glColor3f(1, 0, 1);
+			draw_string(GLUT_BITMAP_9_BY_15, "HARD", 100, 365);
+		
 			break;
 		case 7:
 			if (z_die[0] == 1)
@@ -772,16 +1136,26 @@ void renderScene() {
 			z3.draw();
 			if (z_die[3] == 1)
 			z4.draw();
+			glColor3f(1, 0, 0);
+			draw_string(GLUT_BITMAP_9_BY_15, "HELL", 100, 365);
 			break;
 		}
-		if (percent>60) {
-			glColor3f(1, 0.3, 1);
-			draw_string(GLUT_BITMAP_9_BY_15, "WIIIINNNNNN", 120, 150);
+		if (percent>80) {
+			glColor3f(0, 1, 1);
+			draw_string(GLUT_BITMAP_9_BY_15, "CONGRATULATION!", 90, 170);
+			draw_string(GLUT_BITMAP_9_BY_15, "YOU WIN!", 120, 150);
+			draw_string(GLUT_BITMAP_9_BY_15, "PRESS R button to Restart", 40, 100);
+
+
+			win++;
 		}
 	}
 	if (life == 0) {
-		glColor3f(1, 0.3, 1);
-		draw_string(GLUT_BITMAP_9_BY_15, "GAME OVER", 120, 150);
+		glColor3f(1, 1, 1);
+		draw_string(GLUT_BITMAP_9_BY_15, "GAME OVER", 110, 170);
+		draw_string(GLUT_BITMAP_9_BY_15, "PRESS R button to Restart", 40, 100);
+
+		win--;
 	}
 
 	glutSwapBuffers();
